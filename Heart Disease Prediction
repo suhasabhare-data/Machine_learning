@@ -1,0 +1,54 @@
+import pandas as pd
+import numpy as np
+import pylab as pl
+import scipy.optimize as opt
+import statsmodels.api as sm
+from sklearn import preprocessing 
+import matplotlib.pyplot as plt
+import matplotlib.mlab as mlab
+import seaborn as sns
+disease_df=pd.read_csv("apth for csv")
+disease_df.drop(['education'],inplace=True,axis=1)
+disease_df.rename(columns={'male':'Sex_male'},inplace=True)
+#### Handling Missing Values
+disease_df.dropna(axis=0,inplace=True)
+print(disease_df.head(),disease_df.shape)
+print(disease_df.TenYearCHD.value_counts())
+disease_df.columns
+#### Splitting the Dataset into Test and Train Sets
+X=np.asanyarray(disease_df[['age','Sex_male','cigsPerDay','totChol','sysBP','glucose']])
+y=np.asanyarray(disease_df['TenYearCHD'])
+##### # normalization of the dataset
+X=preprocessing.StandardScaler().fit_transform(X)
+#### # Train-and-Test -Split
+from sklearn.model_selection import train_test_split
+X_train,x_test,y_train,Y_test=train_test_split(X,y,test_size=0.3,random_state=4)
+print ('Train set:', X_train.shape,  y_train.shape)
+print ('Test set:', x_test.shape,  Y_test.shape)
+### Exploratory Data Analysis of Heart Disease Dataset
+
+#### # counting no. of patients affected with CHD
+plt.figure(figsize=(7,5))
+sns.countplot(x='TenYearCHD',data=disease_df, palette="BuGn_r")
+plt.show()
+### Fitting Logistic Regression Model for Heart Disease Prediction
+
+from sklearn.linear_model import LogisticRegression
+logreg=LogisticRegression()
+logreg.fit(X_train,y_train)
+y_pred=logreg.predict(x_test)
+### Evaluating Logistic Regression Model
+
+from sklearn.metrics import accuracy_score
+print('Accuracy score of model is ',accuracy_score(Y_test,y_pred))
+### Confusion Matrix
+from sklearn.metrics import confusion_matrix,classification_report
+cm=confusion_matrix(Y_test,y_pred)
+conf_matrix=pd.DataFrame(data=cm,columns = ['Predicted:0', 'Predicted:1'], 
+                           index =['Actual:0', 'Actual:1'])
+sns.heatmap(conf_matrix, annot = True, fmt = 'd', cmap = "Greens")
+plt.show()
+print('The details for confusion matrix is =')
+print (classification_report(Y_test, y_pred))
+
+  
